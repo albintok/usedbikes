@@ -8,8 +8,8 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model=User
         fields=["username","password"]
-def create(self,validated_data):
-    return User.objects.create_user(**validated_data)
+    def create(self,validated_data):
+        return User.objects.create_user(**validated_data)
 
 class VechicleSerializer(serializers.ModelSerializer):
     user=serializers.CharField(read_only=True)

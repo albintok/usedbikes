@@ -18,13 +18,13 @@ class UsersignupView(ViewSet):
             return Response(data=serializer.errors)
 
 #localhost:8000/bikes/
-class VechicleView(ModelViewSet):
+class VechicleView(ViewSet):
     def list(self, request, *args, **kwargs):
       all_bikes=Vechicles.objects.all()
       serializer=VechicleSerializer(all_bikes,many=True)
       return Response(data=serializer.data)
 
-# localhost:8000/bikes/{id}
+# localhost:8000/bikes/{id}/
     def retrieve(self, request, *args, **kwargs):
         id=kwargs.get("pk")
         bike=Vechicles.objects.get(id=id)
@@ -47,12 +47,15 @@ class VechicleView(ModelViewSet):
         id=kwargs.get("pk")
         user=request.user
         bike=Vechicles.objects.get(id=id)
-        serializer=ImageSerilaizer(data=request.data,context={"user":user,"vechicle":bike})
-        if serializer.is_valid():
-            serializer.save()
-            return Response(data=serializer.data)
+        if bike.user==user:
+           serializer=ImageSerilaizer(data=request.data,context={"user":user,"vechicle":bike})
+           if serializer.is_valid():
+              serializer.save()
+              return Response(data=serializer.data)
+           else:
+              return Response(data=serializer.errors)
         else:
-            return Response(data=serializer.errors)
+            return Response(data="invalid user")
 #localhost:8000/bikes/{id}/get_images
     @action(methods=["GET"],detail=True)
     def get_image(self,request,*args,**kwargs):
@@ -67,17 +70,29 @@ class VechicleView(ModelViewSet):
         id=kwargs.get("pk")
         bike=Vechicles.objects.get(id=id)
         uid=request.user
-        serializer=WishlistSerializer(data=request.data,context={"user":uid,"vechicles":bike})
+        price=request.data
+        serializer=WishlistSerializer(data=request.data,context={"user":uid,"vechicles":bike,"rs":price})
         if serializer.is_valid():
             serializer.save()
             return Response(data=serializer.data)
         else:
             return Response(data=serializer.errors)
 
+#localhost:8000/bikes/{id}/wishlist/
+    @action(methods=["GET"],detail=True)
+    def wishlist(self,request,*args,**kwargs):
+        id=kwargs.get("pk")
+        bike=Vechicles.objects.get(id=id)
+        offer=bike.wishlist_set.all()
+        serializer=WishlistSerializer(offer,many=True)
+        return Response(data=serializer.data)
+
+
 #localhost:8000/wishlist/
-class WishlistView(ModelViewSet):
-    serializer_class =WishlistSerializer
-    queryset = Wishlist.objects.all()
-    permission_classes = [permissions.IsAuthenticated]
-    def get_queryset(self):
-        return Wishlist.objects.filter(user=self.request.user)
+class WishlistView(ViewSet):
+    def list(self,requset,*args,**kwargs):
+        all_wishes=Wishlist.objects.all()
+        serializer=WishlistSerializer(all_wishes,many=True)
+        return Response(data=serializer.data)
+
+
