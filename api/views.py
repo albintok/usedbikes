@@ -19,6 +19,8 @@ class UsersignupView(ViewSet):
 
 #localhost:8000/bikes/
 class VechicleView(ViewSet):
+
+    permission_classes = [permissions.IsAuthenticated]
     def list(self, request, *args, **kwargs):
       all_bikes=Vechicles.objects.all()
       serializer=VechicleSerializer(all_bikes,many=True)
